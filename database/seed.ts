@@ -1,7 +1,7 @@
 
 import fs from "fs";
 import path from "path";
-import ImageKit from "imagekit";
+import ImageKit from "@imagekit/nodejs"
 import { servicesCatalog } from "@/database/schema";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
