@@ -16,7 +16,7 @@ export async function sendContactEmail(data: ContactEmailData): Promise<boolean>
 
     // Check if Resend token is available
     if (!config.env.resendToken) {
-      console.log('RESEND_TOKEN not configured, skipping Resend API');
+      console.error('RESEND_TOKEN not configured. Please add RESEND_TOKEN to your environment variables.');
       return false;
     }
 
@@ -46,8 +46,8 @@ Customer Email: ${email}
     // Get priority emoji for subject
     const priorityEmoji = priority === "high" ? "🚨" : priority === "medium" ? "⚠️" : "ℹ️";
 
-    // Use onboarding@resend.dev for testing (this is always available)
-    const fromEmail = 'onboarding@resend.dev';
+    // Use Resend's default domain (works on Vercel without DNS setup)
+    const fromEmail = 'Sanbry Grooming <onboarding@resend.dev>';
     
     console.log('Attempting to send email via Resend API...');
     console.log('From:', fromEmail);
@@ -255,11 +255,12 @@ export async function sendPasswordResetEmail(email: string, resetLink: string, u
   try {
     // Check if Resend token is available
     if (!config.env.resendToken) {
-      console.log('RESEND_TOKEN not configured, skipping password reset email');
+      console.error('RESEND_TOKEN not configured. Please add RESEND_TOKEN to your environment variables.');
       return false;
     }
 
-    const fromEmail = 'onboarding@resend.dev';
+    // Use Resend's default domain (works on Vercel without DNS setup)
+    const fromEmail = 'Sanbry Grooming <onboarding@resend.dev>';
     
     console.log('Sending password reset email via Resend...');
     console.log('To:', email);
@@ -373,15 +374,22 @@ export async function sendAccountCredentialsEmail(
   try {
     // Check if Resend token is available
     if (!config.env.resendToken) {
-      console.log('RESEND_TOKEN not configured, skipping account credentials email');
+      console.error('RESEND_TOKEN not configured. Please add RESEND_TOKEN to your environment variables.');
       return false;
     }
 
-    const fromEmail = 'onboarding@resend.dev';
-    const loginLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/sign-in`;
+    // Use Resend's default domain (works on Vercel without DNS setup)
+    const fromEmail = 'Sanbry Grooming <onboarding@resend.dev>';
+    
+    // Get the app URL from environment or use production URL
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                   "http://localhost:3000";
+    const loginLink = `${appUrl}/sign-in`;
     
     console.log('Sending account credentials email via Resend...');
     console.log('To:', email);
+    console.log('App URL:', appUrl);
 
     // Send email using Resend API
     const response = await fetch('https://api.resend.com/emails', {

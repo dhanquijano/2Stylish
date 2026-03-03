@@ -42,8 +42,10 @@ export async function POST(request: NextRequest) {
       expiresAt,
     });
 
-    // Create reset link
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+    // Create reset link with proper URL handling for Vercel
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const resetLink = `${appUrl}/reset-password?token=${token}`;
 
     // Send password reset email
     const emailSent = await sendPasswordResetEmail(email, resetLink, user[0].fullName);
