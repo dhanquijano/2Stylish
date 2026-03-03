@@ -46,8 +46,8 @@ Customer Email: ${email}
     // Get priority emoji for subject
     const priorityEmoji = priority === "high" ? "🚨" : priority === "medium" ? "⚠️" : "ℹ️";
 
-    // Use Resend's default domain (works on Vercel without DNS setup)
-    const fromEmail = 'Sanbry Grooming <onboarding@resend.dev>';
+    // Use custom verified domain
+    const fromEmail = 'Sanbry Grooming <noreply@dhanq.site>';
     
     console.log('Attempting to send email via Resend API...');
     console.log('From:', fromEmail);
@@ -259,8 +259,8 @@ export async function sendPasswordResetEmail(email: string, resetLink: string, u
       return false;
     }
 
-    // Use Resend's default domain (works on Vercel without DNS setup)
-    const fromEmail = 'Sanbry Grooming <onboarding@resend.dev>';
+    // Use custom verified domain
+    const fromEmail = 'Sanbry Grooming <noreply@dhanq.site>';
     
     console.log('Sending password reset email via Resend...');
     console.log('To:', email);
@@ -378,8 +378,8 @@ export async function sendAccountCredentialsEmail(
       return false;
     }
 
-    // Use Resend's default domain (works on Vercel without DNS setup)
-    const fromEmail = 'Sanbry Grooming <onboarding@resend.dev>';
+    // Use custom verified domain
+    const fromEmail = 'Sanbry Grooming <noreply@dhanq.site>';
     
     // Get the app URL from environment or use production URL
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
