@@ -42,6 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user[0].fullName,
           role: user[0].role,
           branch: user[0].branch,
+          requirePasswordChange: user[0].requirePasswordChange === 1 || false,
         } as User;
       },
     }),
@@ -52,12 +53,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.role = user.role;
         token.branch = user.branch;
+        token.requirePasswordChange = user.requirePasswordChange;
+      }
+
+      // Handle session update (e.g., after password change)
+      if (trigger === "update" && session) {
+        token.requirePasswordChange = false;
       }
 
       return token;
@@ -69,6 +76,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.name = token.name as string;
         session.user.role = token.role as string;
         session.user.branch = token.branch as string;
+        session.user.requirePasswordChange = token.requirePasswordChange as boolean;
       }
 
       return session;

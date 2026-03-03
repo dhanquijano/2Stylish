@@ -113,6 +113,17 @@ const AuthForm = <T extends FieldValues>({
         </form>
       </Form>
 
+      {isSignIn && (
+        <div className="text-center">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-light-800 hover:text-primary transition-colors"
+          >
+            Forgot your password?
+          </Link>
+        </div>
+      )}
+
       <p className="text-center text-sm sm:text-base font-medium text-light-800">
         {isSignIn ? "New to Sanbry's? " : "Already have an account? "}
 

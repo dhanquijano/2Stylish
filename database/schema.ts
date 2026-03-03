@@ -21,6 +21,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   branch: text("branch"), // Branch assignment for the user
   role: ROLE_ENUM("role").default("USER"),
+  requirePasswordChange: integer("require_password_change").default(0), // 0 = false, 1 = true
   lastActivityDate: date("last_activity_date").defaultNow(),
   createdAt: timestamp("created-at", {
     withTimezone: true,
@@ -28,6 +29,14 @@ export const users = pgTable("users", {
 });
 
 
+
+export const APPOINTMENT_STATUS_ENUM = pgEnum("appointment_status", [
+  "pending",
+  "confirmed",
+  "completed",
+  "cancelled",
+  "no-show"
+]);
 
 export const appointments = pgTable("appointments", {
   id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
@@ -43,7 +52,11 @@ export const appointments = pgTable("appointments", {
   barber: varchar("barber", { length: 100 }).notNull(),
   services: text("services").notNull(),
 
+  status: APPOINTMENT_STATUS_ENUM("status").default("pending").notNull(),
+  salesId: text("sales_id"), // Reference to sales record if completed
+
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({
   // Unique constraint to prevent double booking of the same barber at the same time
   uniqueBooking: index("appointments_unique_booking_idx").on(
@@ -52,6 +65,7 @@ export const appointments = pgTable("appointments", {
     table.branch,
     table.barber
   ),
+  statusIdx: index("appointments_status_idx").on(table.status),
 }));
 
 // Inventory Management Tables
@@ -349,3 +363,17 @@ export const transactionVerifications = pgTable("transaction_verifications", {
   statusIdx: index("transaction_verifications_status_idx").on(table.status),
   verifiedAtIdx: index("transaction_verifications_verified_at_idx").on(table.verifiedAt),
 }));
+
+// Password Reset Tokens
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
+  userId: uuid("user_id").notNull().references(() => users.id),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  used: integer("used").notNull().default(0), // 0 = false, 1 = true
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  tokenIdx: index("password_reset_tokens_token_idx").on(table.token),
+  userIdIdx: index("password_reset_tokens_user_id_idx").on(table.userId),
+}));
+

@@ -83,12 +83,12 @@ export const getAvailableTimeSlots = async (
 
     console.log(`[getAvailableTimeSlots] Found ${existingAppointments.length} existing appointments for barber "${barberName}" on ${date}:`, existingAppointments);
     
-    // Filter to only appointments at the selected branch (if branch name matches)
+    // Filter to only appointments at the selected branch (exact match)
     const branchFilteredAppointments = existingAppointments.filter(
-      apt => apt.branch === branchName || apt.branch.toLowerCase().includes(branchName.toLowerCase()) || branchName.toLowerCase().includes(apt.branch.toLowerCase())
+      apt => apt.branch === branchName
     );
     
-    console.log(`[getAvailableTimeSlots] After branch filtering (${branchName}):`, branchFilteredAppointments);
+    console.log(`[getAvailableTimeSlots] After branch filtering (looking for "${branchName}"):`, branchFilteredAppointments);
 
     // Generate all possible time slots
     const allTimeSlots = generateTimeSlots();

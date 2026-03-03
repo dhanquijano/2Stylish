@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/database/drizzle";
-import { appointments } from "@/database/schema";
+import { appointments, inventoryBranches, barbers } from "@/database/schema";
 import { eq, and } from "drizzle-orm";
 import { isStaffAvailable } from "@/lib/appointment-utils";
 
@@ -16,19 +16,14 @@ export const createAppointment = async (data: {
   services: string;
 }) => {
   try {
-    // Fetch branch and barber lists
-    const [branchesResponse, barbersResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/branches.json`),
-      fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/barbers.json`),
+    // Fetch branch and barber data from the database instead of JSON files
+    const [branchesData, barbersData] = await Promise.all([
+      db.select().from(inventoryBranches),
+      db.select().from(barbers),
     ]);
 
-    const [branches, barbers] = await Promise.all([
-      branchesResponse.json(),
-      barbersResponse.json(),
-    ]);
-
-    const branch = branches.find((b: any) => b.id === data.branch);
-    const barber = barbers.find((b: any) => b.id === data.barber);
+    const branch = branchesData.find((b: any) => b.id === data.branch);
+    const barber = barbersData.find((b: any) => b.id === data.barber);
 
     const branchName = branch?.name || data.branch;
     const barberName =

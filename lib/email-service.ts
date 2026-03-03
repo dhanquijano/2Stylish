@@ -249,3 +249,264 @@ Submitted: ${new Date().toLocaleString()}
     return false;
   }
 }
+
+// Send password reset email
+export async function sendPasswordResetEmail(email: string, resetLink: string, userName?: string): Promise<boolean> {
+  try {
+    // Check if Resend token is available
+    if (!config.env.resendToken) {
+      console.log('RESEND_TOKEN not configured, skipping password reset email');
+      return false;
+    }
+
+    const fromEmail = 'onboarding@resend.dev';
+    
+    console.log('Sending password reset email via Resend...');
+    console.log('To:', email);
+
+    // Send email using Resend API
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.env.resendToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: email,
+        subject: '🔐 Reset Your Password - Sanbry Men Grooming House',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #c96e06; margin: 0;">Sanbry Men Grooming House</h1>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
+              <h2 style="color: #333; margin-top: 0;">Reset Your Password</h2>
+              
+              ${userName ? `<p style="color: #666;">Hi ${userName},</p>` : ''}
+              
+              <p style="color: #666; line-height: 1.6;">
+                We received a request to reset your password. Click the button below to create a new password:
+              </p>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetLink}" 
+                   style="background-color: #c96e06; color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                  Reset Password
+                </a>
+              </div>
+
+              <p style="color: #666; line-height: 1.6;">
+                Or copy and paste this link into your browser:
+              </p>
+              <p style="color: #007bff; word-break: break-all; background-color: #fff; padding: 10px; border-radius: 5px; font-size: 14px;">
+                ${resetLink}
+              </p>
+
+              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="color: #856404; margin: 0; font-size: 14px;">
+                  <strong>⚠️ Important:</strong> This link will expire in 1 hour for security reasons.
+                </p>
+              </div>
+
+              <p style="color: #666; line-height: 1.6; font-size: 14px;">
+                If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
+              </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                This is an automated email from Sanbry Men Grooming House
+              </p>
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                If you have any questions, please contact our support team
+              </p>
+            </div>
+          </div>
+        `,
+        text: `
+Reset Your Password - Sanbry Men Grooming House
+
+${userName ? `Hi ${userName},` : 'Hello,'}
+
+We received a request to reset your password. Click the link below to create a new password:
+
+${resetLink}
+
+This link will expire in 1 hour for security reasons.
+
+If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
+
+---
+Sanbry Men Grooming House
+        `.trim(),
+      }),
+    });
+
+    console.log('Resend API response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Resend API error response:', errorData);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log('Password reset email sent successfully:', result);
+    return true;
+
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    return false;
+  }
+}
+
+
+// Send new account credentials email
+export async function sendAccountCredentialsEmail(
+  email: string,
+  temporaryPassword: string,
+  fullName: string,
+  role: string
+): Promise<boolean> {
+  try {
+    // Check if Resend token is available
+    if (!config.env.resendToken) {
+      console.log('RESEND_TOKEN not configured, skipping account credentials email');
+      return false;
+    }
+
+    const fromEmail = 'onboarding@resend.dev';
+    const loginLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/sign-in`;
+    
+    console.log('Sending account credentials email via Resend...');
+    console.log('To:', email);
+
+    // Send email using Resend API
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.env.resendToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: email,
+        subject: '🎉 Welcome to Sanbry Men Grooming House - Your Account Details',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #c96e06; margin: 0;">Sanbry Men Grooming House</h1>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
+              <h2 style="color: #333; margin-top: 0;">Welcome to the Team!</h2>
+              
+              <p style="color: #666; line-height: 1.6;">
+                Hi ${fullName},
+              </p>
+              
+              <p style="color: #666; line-height: 1.6;">
+                Your account has been created successfully. Below are your login credentials:
+              </p>
+
+              <div style="background-color: #fff; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #c96e06;">
+                <p style="margin: 5px 0; color: #333;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 5px 0; color: #333;"><strong>Temporary Password:</strong> <code style="background-color: #f0f0f0; padding: 4px 8px; border-radius: 3px; font-size: 14px;">${temporaryPassword}</code></p>
+                <p style="margin: 5px 0; color: #333;"><strong>Role:</strong> ${role}</p>
+              </div>
+
+              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="color: #856404; margin: 0; font-size: 14px;">
+                  <strong>⚠️ Important:</strong> You will be required to change your password upon first login for security reasons.
+                </p>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${loginLink}" 
+                   style="background-color: #c96e06; color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                  Login to Your Account
+                </a>
+              </div>
+
+              <p style="color: #666; line-height: 1.6;">
+                Or copy and paste this link into your browser:
+              </p>
+              <p style="color: #007bff; word-break: break-all; background-color: #fff; padding: 10px; border-radius: 5px; font-size: 14px;">
+                ${loginLink}
+              </p>
+
+              <div style="background-color: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="color: #0d47a1; margin: 0; font-size: 14px;">
+                  <strong>🔒 Security Tips:</strong>
+                </p>
+                <ul style="color: #0d47a1; margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                  <li>Change your password immediately after first login</li>
+                  <li>Use a strong password with at least 8 characters</li>
+                  <li>Never share your password with anyone</li>
+                  <li>Keep your login credentials secure</li>
+                </ul>
+              </div>
+
+              <p style="color: #666; line-height: 1.6; font-size: 14px;">
+                If you have any questions or need assistance, please contact your administrator.
+              </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                This is an automated email from Sanbry Men Grooming House
+              </p>
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                Please do not reply to this email
+              </p>
+            </div>
+          </div>
+        `,
+        text: `
+Welcome to Sanbry Men Grooming House!
+
+Hi ${fullName},
+
+Your account has been created successfully. Below are your login credentials:
+
+Email: ${email}
+Temporary Password: ${temporaryPassword}
+Role: ${role}
+
+IMPORTANT: You will be required to change your password upon first login for security reasons.
+
+Login here: ${loginLink}
+
+Security Tips:
+- Change your password immediately after first login
+- Use a strong password with at least 8 characters
+- Never share your password with anyone
+- Keep your login credentials secure
+
+If you have any questions or need assistance, please contact your administrator.
+
+---
+Sanbry Men Grooming House
+        `.trim(),
+      }),
+    });
+
+    console.log('Resend API response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Resend API error response:', errorData);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log('Account credentials email sent successfully:', result);
+    return true;
+
+  } catch (error) {
+    console.error('Error sending account credentials email:', error);
+    return false;
+  }
+}

@@ -81,25 +81,35 @@ const AppointmentsClient = ({
     }
   };
 
-  const getStatusBadge = (appointmentDate: string, appointmentTime: string) => {
+  const getStatusBadge = (appointment: any) => {
+    const status = appointment.status || "pending";
     const now = new Date();
     const appointmentDateTime = new Date(
-      `${appointmentDate}T${appointmentTime}`,
+      `${appointment.appointmentDate}T${appointment.appointmentTime}`,
     );
 
-    if (appointmentDateTime < now) {
-      return <Badge variant="destructive">Completed</Badge>;
-    } else if (
-      appointmentDateTime.getTime() - now.getTime() <
-      24 * 60 * 60 * 1000
-    ) {
-      return (
-        <Badge variant="default" className="bg-orange-100 text-orange-800">
-          Today
-        </Badge>
-      );
-    } else {
-      return <Badge variant="secondary">Upcoming</Badge>;
+    switch (status) {
+      case "completed":
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+      case "confirmed":
+        return <Badge className="bg-blue-100 text-blue-800">Confirmed</Badge>;
+      case "cancelled":
+        return <Badge className="bg-red-100 text-red-800">Cancelled</Badge>;
+      case "no-show":
+        return <Badge className="bg-gray-100 text-gray-800">No Show</Badge>;
+      case "pending":
+      default:
+        // Check if appointment time has passed
+        if (appointmentDateTime < now) {
+          return <Badge className="bg-yellow-100 text-yellow-800">Pending Confirmation</Badge>;
+        } else if (
+          appointmentDateTime.getTime() - now.getTime() <
+          24 * 60 * 60 * 1000
+        ) {
+          return <Badge className="bg-orange-100 text-orange-800">Today</Badge>;
+        } else {
+          return <Badge variant="secondary">Upcoming</Badge>;
+        }
     }
   };
 
@@ -108,6 +118,15 @@ const AppointmentsClient = ({
     .filter((a) => (date ? dayjs(a.appointmentDate).isSame(date, "day") : true))
     .filter((a) => {
       if (!status) return true;
+      
+      // Filter by status
+      if (status === "pending") return a.status === "pending" || !a.status;
+      if (status === "confirmed") return a.status === "confirmed";
+      if (status === "completed") return a.status === "completed";
+      if (status === "cancelled") return a.status === "cancelled";
+      if (status === "no-show") return a.status === "no-show";
+      
+      // Legacy filters for backward compatibility
       const appointmentDateTime = new Date(
         `${a.appointmentDate}T${a.appointmentTime}`,
       );
@@ -192,9 +211,13 @@ const AppointmentsClient = ({
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="no-show">No Show</SelectItem>
+                <SelectItem value="upcoming">Upcoming (Legacy)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -303,10 +326,7 @@ const AppointmentsClient = ({
                   </div>
 
                   <div className="flex flex-col items-end gap-3 ml-4">
-                    {getStatusBadge(
-                      appointment.appointmentDate,
-                      appointment.appointmentTime,
-                    )}
+                    {getStatusBadge(appointment)}
                     <div className="flex gap-2">
                       <Button
                         variant="outline"

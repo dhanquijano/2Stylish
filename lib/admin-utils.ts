@@ -121,7 +121,14 @@ export function getAdminNavItems(role: string) {
   // For now, all admin roles get the same navigation items
   // This can be extended in the future to filter based on specific roles
   if (role === "ADMIN" || role === "MANAGER") {
-    return baseItems;
+    return [
+      ...baseItems,
+      {
+        img: "/icons/admin/user.svg",
+        route: "/admin/users",
+        text: "User Management",
+      },
+    ];
   }
 
   // Return limited items for other roles

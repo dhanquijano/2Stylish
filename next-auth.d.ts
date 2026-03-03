@@ -9,6 +9,7 @@ declare module "next-auth" {
       email?: string;
       role?: string;
       branch?: string;
+      requirePasswordChange?: boolean;
     };
   }
 
@@ -18,6 +19,7 @@ declare module "next-auth" {
     email?: string;
     role?: string;
     branch?: string;
+    requirePasswordChange?: boolean;
   }
 }
 
@@ -28,5 +30,6 @@ declare module "next-auth/jwt" {
     email?: string;
     role?: string;
     branch?: string;
+    requirePasswordChange?: boolean;
   }
 }
