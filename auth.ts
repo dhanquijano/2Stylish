@@ -3,7 +3,7 @@ import { compare } from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/database/drizzle";
 import { users } from "@/database/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
@@ -24,7 +24,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await db
           .select()
           .from(users)
-          .where(eq(users.email, credentials.email.toString()))
+          .where(sql`LOWER(${users.email}) = LOWER(${credentials.email.toString()})`)
           .limit(1);
 
         if (user.length === 0) return null;
@@ -42,7 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user[0].fullName,
           role: user[0].role,
           branch: user[0].branch,
-          requirePasswordChange: user[0].requirePasswordChange === 1 || false,
+          requirePasswordChange: user[0].requirePasswordChange === 1,
         } as User;
       },
     }),

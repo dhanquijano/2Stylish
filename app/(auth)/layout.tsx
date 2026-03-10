@@ -2,11 +2,30 @@ import React, { ReactNode } from "react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { db } from "@/database/drizzle";
+import { users } from "@/database/schema";
+import { eq } from "drizzle-orm";
 
 const Layout = async ({ children }: { children: ReactNode }) => {
   const session = await auth();
 
-  if (session) redirect("/");
+  // If user is authenticated, check if they need to change password
+  if (session?.user?.id) {
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1);
+
+    if (user.length > 0 && user[0].requirePasswordChange === 1) {
+      // Redirect to change password page
+      redirect("/change-password");
+    } else {
+      // User is authenticated and doesn't need password change
+      // Redirect to home
+      redirect("/");
+    }
+  }
 
   return (
     <main className="auth-container">

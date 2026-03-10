@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/database/drizzle";
 import { users } from "@/database/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { sendAccountCredentialsEmail } from "@/lib/email-service";
@@ -97,11 +97,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
+    // Check if user already exists (case-insensitive)
     const existingUser = await db
       .select()
       .from(users)
-      .where(eq(users.email, email))
+      .where(sql`LOWER(${users.email}) = LOWER(${email})`)
       .limit(1);
 
     if (existingUser.length > 0) {
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       .insert(users)
       .values({
         fullName,
-        email,
+        email: email.toLowerCase(), // Store email in lowercase
         password: hashedPassword,
         role: role as "USER" | "ADMIN" | "MANAGER" | "STAFF",
         branch: branch || null,

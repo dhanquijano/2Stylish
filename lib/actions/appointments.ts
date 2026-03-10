@@ -4,6 +4,7 @@ import { db } from "@/database/drizzle";
 import { appointments, inventoryBranches, barbers } from "@/database/schema";
 import { eq, and } from "drizzle-orm";
 import { isStaffAvailable } from "@/lib/appointment-utils";
+import { sendAppointmentConfirmationEmail } from "@/lib/email-service";
 
 export const createAppointment = async (data: {
   fullName: string;
@@ -81,6 +82,22 @@ export const createAppointment = async (data: {
         barber: barberName,
         services: data.services,
       });
+
+      // Send confirmation email
+      const emailSent = await sendAppointmentConfirmationEmail({
+        email: data.email,
+        fullName: data.fullName,
+        appointmentDate: data.appointmentDate,
+        appointmentTime: data.appointmentTime,
+        branch: branchName,
+        barber: barberName,
+        services: data.services,
+        mobileNumber: data.mobileNumber,
+      });
+
+      if (!emailSent) {
+        console.warn('Appointment created but confirmation email failed to send');
+      }
     } catch (insertError: any) {
       // Handle unique constraint violation (in case of race condition)
       if (insertError?.code === '23505' || insertError?.message?.includes('duplicate') || insertError?.message?.includes('unique')) {

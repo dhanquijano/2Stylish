@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/database/drizzle";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { users } from "@/database/schema";
 import { hash } from "bcryptjs";
 import { signIn } from "@/auth";
@@ -50,7 +50,7 @@ export const signUp = async (params: AuthCredentials) => {
   const existingUser = await db
     .select()
     .from(users)
-    .where(eq(users.email, email))
+    .where(sql`LOWER(${users.email}) = LOWER(${email})`)
     .limit(1);
 
   if (existingUser.length > 0) {
@@ -62,7 +62,7 @@ export const signUp = async (params: AuthCredentials) => {
   try {
     await db.insert(users).values({
       fullName,
-      email,
+      email: email.toLowerCase(), // Store email in lowercase
       password: hashedPassword,
     });
 

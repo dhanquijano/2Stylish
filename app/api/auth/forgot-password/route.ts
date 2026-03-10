@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/database/drizzle";
 import { users, passwordResetTokens } from "@/database/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/lib/email-service";
 
@@ -16,11 +16,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user by email
+    // Find user by email (case-insensitive)
     const user = await db
       .select()
       .from(users)
-      .where(eq(users.email, email))
+      .where(sql`LOWER(${users.email}) = LOWER(${email})`)
       .limit(1);
 
     // Always return success even if user doesn't exist (security best practice)

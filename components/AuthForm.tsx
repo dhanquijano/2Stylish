@@ -60,7 +60,8 @@ const AuthForm = <T extends FieldValues>({
           : "You have successfully signed up",
       });
 
-      router.push("/");
+      // Use window.location for full page reload to ensure session is loaded
+      window.location.href = "/";
     } else {
       toast(`Error! ${isSignIn ? "signing in" : "signing up"}`, {
         description: result.error ?? "An error occurred",

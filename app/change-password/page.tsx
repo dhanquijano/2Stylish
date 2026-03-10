@@ -25,11 +25,9 @@ const ChangePasswordPage = () => {
   });
 
   useEffect(() => {
-    // Redirect if not authenticated
-    if (status === "unauthenticated") {
-      router.push("/sign-in");
-    }
-  }, [status, router]);
+    // Don't redirect - let the auth system handle it
+    // This prevents loops
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,13 +64,9 @@ const ChangePasswordPage = () => {
       if (result.success) {
         toast.success("Password changed successfully!");
         
-        // Update session to reflect password change
-        await update();
-        
-        // Redirect to home or admin panel
-        setTimeout(() => {
-          router.push("/");
-        }, 1000);
+        // Use window.location.href for a full page reload
+        // This ensures the session is completely refreshed
+        window.location.href = "/";
       } else {
         toast.error(result.error || "Failed to change password");
       }
