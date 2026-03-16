@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addDays, differenceInCalendarDays, format } from "date-fns";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 type Branch = { id: string; name: string };
 type Barber = { id: string; name: string; branches: string[] };

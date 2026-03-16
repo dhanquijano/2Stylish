@@ -3,7 +3,6 @@
 import { db } from "@/database/drizzle";
 import { appointments, inventoryBranches, barbers } from "@/database/schema";
 import { eq, and } from "drizzle-orm";
-import { isStaffAvailable } from "@/lib/appointment-utils";
 import { sendAppointmentConfirmationEmail } from "@/lib/email-service";
 
 export const createAppointment = async (data: {
@@ -191,20 +190,8 @@ export const updateAppointment = async (
           };
         }
 
-        // Check staff availability
-        const staffAvailability = await isStaffAvailable(
-          updatedData.appointmentDate,
-          updatedData.appointmentTime,
-          updatedData.barber,
-          updatedData.branch
-        );
-
-        if (!staffAvailability.available) {
-          return {
-            success: false,
-            error: staffAvailability.reason || "Staff member is not available at this time.",
-          };
-        }
+        // Note: staff availability check is intentionally skipped for admin updates.
+        // Admins can reschedule to any non-conflicting slot regardless of shift schedules.
       }
     }
 

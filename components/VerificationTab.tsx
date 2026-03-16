@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import dayjs from "dayjs";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 

@@ -26,7 +26,7 @@ import { FIELD_NAMES } from "@/constants";
 import { FIELD_TYPES } from "@/constants";
 
 import { Path } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 
 interface Props<T extends FieldValues> {
@@ -58,14 +58,26 @@ const AuthForm = <T extends FieldValues>({
         description: isSignIn
           ? "You have successfully signed in!"
           : "You have successfully signed up",
+          style: {
+    background: "#16a34a",
+    color: "#ffffff",
+    border: "1px solid #14532d",
+          }
       });
 
       // Use window.location for full page reload to ensure session is loaded
       window.location.href = "/";
     } else {
-      toast(`Error! ${isSignIn ? "signing in" : "signing up"}`, {
+
+      toast (`Error! ${isSignIn ? "Signing in" : "Signing up"}`, {
         description: result.error ?? "An error occurred",
+          style: {
+    background: "#dc2626",
+    color: "#ffffff",
+    border: "1px solid #991b1b",
+                 },
       });
+
     }
   };
 

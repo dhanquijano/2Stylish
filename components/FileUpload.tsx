@@ -5,7 +5,7 @@ import config from "@/lib/config";
 import ImageKit from "@imagekit/nodejs"
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 const {

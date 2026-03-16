@@ -41,7 +41,7 @@ export const APPOINTMENT_STATUS_ENUM = pgEnum("appointment_status", [
 export const appointments = pgTable("appointments", {
   id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
 
-  email: text("email").notNull().unique(),
+  email: text("email").notNull(),
   fullName: varchar("full_name", { length: 255 }).notNull(),
   mobileNumber: varchar("mobile_number", { length: 20 }).notNull(),
 
