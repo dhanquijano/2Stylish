@@ -47,7 +47,7 @@ Customer Email: ${email}
     const priorityEmoji = priority === "high" ? "🚨" : priority === "medium" ? "⚠️" : "ℹ️";
 
     // Use custom verified domain
-    const fromEmail = 'Sanbry Grooming <noreply@dhanq.site>';
+    const fromEmail = 'Sanbry Grooming <noreply@2stylish.online>';
     
     console.log('Attempting to send email via Resend API...');
     console.log('From:', fromEmail);
@@ -260,7 +260,7 @@ export async function sendPasswordResetEmail(email: string, resetLink: string, u
     }
 
     // Use custom verified domain
-    const fromEmail = 'Sanbry Grooming <noreply@dhanq.site>';
+    const fromEmail = 'Sanbry Grooming <noreply@2stylish.online>';
     
     console.log('Sending password reset email via Resend...');
     console.log('To:', email);
@@ -379,7 +379,7 @@ export async function sendAccountCredentialsEmail(
     }
 
     // Use custom verified domain
-    const fromEmail = 'Sanbry Grooming <noreply@dhanq.site>';
+    const fromEmail = 'Sanbry Grooming <noreply@2stylish.online>';
     
     // Get the app URL from environment or use production URL
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
@@ -538,7 +538,7 @@ export async function sendAppointmentConfirmationEmail(appointmentData: {
     }
 
     // Use custom verified domain
-    const fromEmail = 'Sanbry Grooming <noreply@dhanq.site>';
+    const fromEmail = 'Sanbry Grooming <noreply@2stylish.online>';
     
     // Format the date for better readability
     const formattedDate = new Date(appointmentData.appointmentDate).toLocaleDateString('en-US', {
