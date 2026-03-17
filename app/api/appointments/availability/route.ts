@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date');
     const barberId = searchParams.get('barberId');
     const branchId = searchParams.get('branchId');
+    const adminMode = searchParams.get('adminMode') === 'true';
 
     if (!date || !barberId || !branchId) {
       return NextResponse.json(
@@ -22,6 +23,22 @@ export async function GET(request: NextRequest) {
     let timeSlots = barberId === 'no_preference'
       ? generateTimeSlots().map((time) => ({ time, available: true }))
       : await getAvailableTimeSlots(date, barberId, branchId);
+
+    // In admin mode, skip shift/leave checks — only respect booking conflicts
+    if (adminMode) {
+      // Mark past times as unavailable if date is today (in Asia/Manila timezone)
+      const manilaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+      const [y, m, d] = date.split('-').map(Number);
+      const isSameDate = manilaNow.getFullYear() === y && manilaNow.getMonth() + 1 === m && manilaNow.getDate() === d;
+      const currentTimeHHMM = `${String(manilaNow.getHours()).padStart(2, '0')}:${String(manilaNow.getMinutes()).padStart(2, '0')}`;
+
+      timeSlots = timeSlots.map((slot) => ({
+        ...slot,
+        available: slot.available && (!isSameDate || slot.time > currentTimeHHMM),
+      }));
+
+      return NextResponse.json({ success: true, data: { date, barberId, branchId, timeSlots } });
+    }
 
     // Get shifts and leaves from database
     const dayShifts = await db

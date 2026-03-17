@@ -70,9 +70,9 @@ export const getAvailableTimeSlots = async (
     });
 
     // Get all appointments for the specific date and barber
-    // We'll check both the mapped branch name AND any appointments for this barber on this date
+    // Exclude cancelled and no-show appointments so those slots become available again
     const existingAppointments = await db
-      .select({ appointmentTime: appointments.appointmentTime, barber: appointments.barber, branch: appointments.branch })
+      .select({ appointmentTime: appointments.appointmentTime, barber: appointments.barber, branch: appointments.branch, status: appointments.status })
       .from(appointments)
       .where(
         and(
@@ -81,21 +81,26 @@ export const getAvailableTimeSlots = async (
         ),
       );
 
-    console.log(`[getAvailableTimeSlots] Found ${existingAppointments.length} existing appointments for barber "${barberName}" on ${date}:`, existingAppointments);
+    // Only count active appointments (not cancelled or no-show)
+    const activeAppointments = existingAppointments.filter(
+      apt => apt.status !== "cancelled" && apt.status !== "no-show"
+    );
+
+    console.log(`[getAvailableTimeSlots] Found ${existingAppointments.length} total appointments, ${activeAppointments.length} active for barber "${barberName}" on ${date}`);
     
-    // Filter to only appointments at the selected branch (if branch name matches)
-    const branchFilteredAppointments = existingAppointments.filter(
-      apt => apt.branch === branchName || apt.branch.toLowerCase().includes(branchName.toLowerCase()) || branchName.toLowerCase().includes(apt.branch.toLowerCase())
+    // Filter to only appointments at the selected branch (exact match)
+    const branchFilteredAppointments = activeAppointments.filter(
+      apt => apt.branch === branchName
     );
     
-    console.log(`[getAvailableTimeSlots] After branch filtering (${branchName}):`, branchFilteredAppointments);
-
-    // Generate all possible time slots
-    const allTimeSlots = generateTimeSlots();
+    console.log(`[getAvailableTimeSlots] After branch filtering (looking for "${branchName}"):`, branchFilteredAppointments);
 
     // Get booked times (from branch-filtered appointments)
     const bookedTimes = branchFilteredAppointments.map((apt) => apt.appointmentTime);
     console.log(`[getAvailableTimeSlots] Booked times:`, bookedTimes);
+
+    // Generate all possible time slots
+    const allTimeSlots = generateTimeSlots();
 
     // Get shifts and leaves for staff availability check
     const [dayShifts, dayLeaves] = await Promise.all([

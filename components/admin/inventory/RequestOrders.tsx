@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Package, Clock, CheckCircle, XCircle, Eye } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import BranchFilter from "./BranchFilter";
 import { useAdminRole, useBranchMap } from "@/lib/admin-utils";
 
