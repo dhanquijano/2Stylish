@@ -16,7 +16,7 @@ export async function sendContactEmail(data: ContactEmailData): Promise<boolean>
 
     // Check if Resend token is available
     if (!config.env.resendToken) {
-      console.log('RESEND_TOKEN not configured, skipping Resend API');
+      console.error('RESEND_TOKEN not configured. Please add RESEND_TOKEN to your environment variables.');
       return false;
     }
 
@@ -46,8 +46,8 @@ Customer Email: ${email}
     // Get priority emoji for subject
     const priorityEmoji = priority === "high" ? "🚨" : priority === "medium" ? "⚠️" : "ℹ️";
 
-    // Use onboarding@resend.dev for testing (this is always available)
-    const fromEmail = 'onboarding@resend.dev';
+    // Use custom verified domain
+    const fromEmail = 'Sanbry Grooming <noreply@2stylish.online>';
     
     console.log('Attempting to send email via Resend API...');
     console.log('From:', fromEmail);
@@ -249,3 +249,481 @@ Submitted: ${new Date().toLocaleString()}
     return false;
   }
 }
+
+// Send password reset email
+export async function sendPasswordResetEmail(email: string, resetLink: string, userName?: string): Promise<boolean> {
+  try {
+    // Check if Resend token is available
+    if (!config.env.resendToken) {
+      console.error('RESEND_TOKEN not configured. Please add RESEND_TOKEN to your environment variables.');
+      return false;
+    }
+
+    // Use custom verified domain
+    const fromEmail = 'Sanbry Grooming <noreply@2stylish.online>';
+    
+    console.log('Sending password reset email via Resend...');
+    console.log('To:', email);
+
+    // Send email using Resend API
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.env.resendToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: email,
+        subject: '🔐 Reset Your Password - Sanbry Men Grooming House',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #c96e06; margin: 0;">Sanbry Men Grooming House</h1>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
+              <h2 style="color: #333; margin-top: 0;">Reset Your Password</h2>
+              
+              ${userName ? `<p style="color: #666;">Hi ${userName},</p>` : ''}
+              
+              <p style="color: #666; line-height: 1.6;">
+                We received a request to reset your password. Click the button below to create a new password:
+              </p>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetLink}" 
+                   style="background-color: #c96e06; color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                  Reset Password
+                </a>
+              </div>
+
+              <p style="color: #666; line-height: 1.6;">
+                Or copy and paste this link into your browser:
+              </p>
+              <p style="color: #007bff; word-break: break-all; background-color: #fff; padding: 10px; border-radius: 5px; font-size: 14px;">
+                ${resetLink}
+              </p>
+
+              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="color: #856404; margin: 0; font-size: 14px;">
+                  <strong>⚠️ Important:</strong> This link will expire in 1 hour for security reasons.
+                </p>
+              </div>
+
+              <p style="color: #666; line-height: 1.6; font-size: 14px;">
+                If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
+              </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                This is an automated email from Sanbry Men Grooming House
+              </p>
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                If you have any questions, please contact our support team
+              </p>
+            </div>
+          </div>
+        `,
+        text: `
+Reset Your Password - Sanbry Men Grooming House
+
+${userName ? `Hi ${userName},` : 'Hello,'}
+
+We received a request to reset your password. Click the link below to create a new password:
+
+${resetLink}
+
+This link will expire in 1 hour for security reasons.
+
+If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
+
+---
+Sanbry Men Grooming House
+        `.trim(),
+      }),
+    });
+
+    console.log('Resend API response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Resend API error response:', errorData);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log('Password reset email sent successfully:', result);
+    return true;
+
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    return false;
+  }
+}
+
+
+// Send new account credentials email
+export async function sendAccountCredentialsEmail(
+  email: string,
+  temporaryPassword: string,
+  fullName: string,
+  role: string
+): Promise<boolean> {
+  try {
+    // Check if Resend token is available
+    if (!config.env.resendToken) {
+      console.error('RESEND_TOKEN not configured. Please add RESEND_TOKEN to your environment variables.');
+      return false;
+    }
+
+    // Use custom verified domain
+    const fromEmail = 'Sanbry Grooming <noreply@2stylish.online>';
+    
+    // Get the app URL from environment or use production URL
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                   "http://localhost:3000";
+    const loginLink = `${appUrl}/sign-in`;
+    
+    console.log('Sending account credentials email via Resend...');
+    console.log('To:', email);
+    console.log('App URL:', appUrl);
+
+    // Send email using Resend API
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.env.resendToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: email,
+        subject: '🎉 Welcome to Sanbry Men Grooming House - Your Account Details',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #c96e06; margin: 0;">Sanbry Men Grooming House</h1>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
+              <h2 style="color: #333; margin-top: 0;">Welcome to the Team!</h2>
+              
+              <p style="color: #666; line-height: 1.6;">
+                Hi ${fullName},
+              </p>
+              
+              <p style="color: #666; line-height: 1.6;">
+                Your account has been created successfully. Below are your login credentials:
+              </p>
+
+              <div style="background-color: #fff; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #c96e06;">
+                <p style="margin: 5px 0; color: #333;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 5px 0; color: #333;"><strong>Temporary Password:</strong> <code style="background-color: #f0f0f0; padding: 4px 8px; border-radius: 3px; font-size: 14px;">${temporaryPassword}</code></p>
+                <p style="margin: 5px 0; color: #333;"><strong>Role:</strong> ${role}</p>
+              </div>
+
+              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="color: #856404; margin: 0; font-size: 14px;">
+                  <strong>⚠️ Important:</strong> You will be required to change your password upon first login for security reasons.
+                </p>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${loginLink}" 
+                   style="background-color: #c96e06; color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                  Login to Your Account
+                </a>
+              </div>
+
+              <p style="color: #666; line-height: 1.6;">
+                Or copy and paste this link into your browser:
+              </p>
+              <p style="color: #007bff; word-break: break-all; background-color: #fff; padding: 10px; border-radius: 5px; font-size: 14px;">
+                ${loginLink}
+              </p>
+
+              <div style="background-color: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="color: #0d47a1; margin: 0; font-size: 14px;">
+                  <strong>🔒 Security Tips:</strong>
+                </p>
+                <ul style="color: #0d47a1; margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                  <li>Change your password immediately after first login</li>
+                  <li>Use a strong password with at least 8 characters</li>
+                  <li>Never share your password with anyone</li>
+                  <li>Keep your login credentials secure</li>
+                </ul>
+              </div>
+
+              <p style="color: #666; line-height: 1.6; font-size: 14px;">
+                If you have any questions or need assistance, please contact your administrator.
+              </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                This is an automated email from Sanbry Men Grooming House
+              </p>
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                Please do not reply to this email
+              </p>
+            </div>
+          </div>
+        `,
+        text: `
+Welcome to Sanbry Men Grooming House!
+
+Hi ${fullName},
+
+Your account has been created successfully. Below are your login credentials:
+
+Email: ${email}
+Temporary Password: ${temporaryPassword}
+Role: ${role}
+
+IMPORTANT: You will be required to change your password upon first login for security reasons.
+
+Login here: ${loginLink}
+
+Security Tips:
+- Change your password immediately after first login
+- Use a strong password with at least 8 characters
+- Never share your password with anyone
+- Keep your login credentials secure
+
+If you have any questions or need assistance, please contact your administrator.
+
+---
+Sanbry Men Grooming House
+        `.trim(),
+      }),
+    });
+
+    console.log('Resend API response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Resend API error response:', errorData);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log('Account credentials email sent successfully:', result);
+    return true;
+
+  } catch (error) {
+    console.error('Error sending account credentials email:', error);
+    return false;
+  }
+}
+
+// Send appointment confirmation email
+export async function sendAppointmentConfirmationEmail(appointmentData: {
+  email: string;
+  fullName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  branch: string;
+  barber: string;
+  services: string;
+  mobileNumber: string;
+}): Promise<boolean> {
+  try {
+    // Check if Resend token is available
+    if (!config.env.resendToken) {
+      console.error('RESEND_TOKEN not configured. Please add RESEND_TOKEN to your environment variables.');
+      return false;
+    }
+
+    // Use custom verified domain
+    const fromEmail = 'Sanbry Grooming <noreply@2stylish.online>';
+    
+    // Format the date for better readability
+    const formattedDate = new Date(appointmentData.appointmentDate).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Format time to 12-hour format
+    const [hours, minutes] = appointmentData.appointmentTime.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    const formattedTime = `${hour12}:${minutes} ${ampm}`;
+
+    // Parse services (assuming comma-separated)
+    const servicesList = appointmentData.services.split(',').map(s => s.trim());
+    
+    console.log('Sending appointment confirmation email via Resend...');
+    console.log('To:', appointmentData.email);
+
+    // Send email using Resend API
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.env.resendToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: appointmentData.email,
+        subject: '✅ Appointment Confirmed - Sanbry Men Grooming House',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #c96e06; margin: 0;">Sanbry Men Grooming House</h1>
+              <p style="color: #666; margin-top: 10px;">Your Grooming Destination</p>
+            </div>
+
+            <div style="background-color: #d4edda; border-left: 4px solid #28a745; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+              <h2 style="color: #155724; margin: 0; font-size: 20px;">✅ Appointment Confirmed!</h2>
+              <p style="color: #155724; margin: 10px 0 0 0;">Your appointment has been successfully booked.</p>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
+              <h3 style="color: #333; margin-top: 0; border-bottom: 2px solid #c96e06; padding-bottom: 10px;">Appointment Details</h3>
+              
+              <div style="margin: 20px 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6;">
+                      <strong style="color: #555;">📅 Date:</strong>
+                    </td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6; text-align: right; color: #333;">
+                      ${formattedDate}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6;">
+                      <strong style="color: #555;">🕐 Time:</strong>
+                    </td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6; text-align: right; color: #333;">
+                      ${formattedTime}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6;">
+                      <strong style="color: #555;">📍 Branch:</strong>
+                    </td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6; text-align: right; color: #333;">
+                      ${appointmentData.branch}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6;">
+                      <strong style="color: #555;">✂️ Barber:</strong>
+                    </td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6; text-align: right; color: #333;">
+                      ${appointmentData.barber || 'No Preference'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6;">
+                      <strong style="color: #555;">👤 Name:</strong>
+                    </td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #dee2e6; text-align: right; color: #333;">
+                      ${appointmentData.fullName}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0;">
+                      <strong style="color: #555;">📱 Mobile:</strong>
+                    </td>
+                    <td style="padding: 12px 0; text-align: right; color: #333;">
+                      ${appointmentData.mobileNumber}
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="margin: 25px 0;">
+                <h4 style="color: #333; margin-bottom: 10px;">Services Booked:</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                  ${servicesList.map(service => `
+                    <li style="background-color: #fff; padding: 10px 15px; margin: 5px 0; border-left: 3px solid #c96e06; border-radius: 3px;">
+                      ✓ ${service}
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+
+              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="color: #856404; margin: 0; font-size: 14px;">
+                  <strong>⏰ Please arrive 5-10 minutes early</strong> to ensure your appointment starts on time.
+                </p>
+              </div>
+
+              <div style="background-color: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="color: #0d47a1; margin: 0; font-size: 14px;">
+                  <strong>📞 Need to reschedule or cancel?</strong><br>
+                  Please contact us at least 24 hours in advance.
+                </p>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+              <p style="color: #666; font-size: 14px; margin: 10px 0;">
+                We look forward to serving you!
+              </p>
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                This is an automated confirmation email from Sanbry Men Grooming House
+              </p>
+              <p style="color: #999; font-size: 12px; margin: 5px 0;">
+                For inquiries, please contact your selected branch
+              </p>
+            </div>
+          </div>
+        `,
+        text: `
+APPOINTMENT CONFIRMED - Sanbry Men Grooming House
+
+Your appointment has been successfully booked!
+
+Appointment Details:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Date: ${formattedDate}
+Time: ${formattedTime}
+Branch: ${appointmentData.branch}
+Barber: ${appointmentData.barber || 'No Preference'}
+Name: ${appointmentData.fullName}
+Mobile: ${appointmentData.mobileNumber}
+
+Services Booked:
+${servicesList.map(service => `✓ ${service}`).join('\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IMPORTANT REMINDERS:
+⏰ Please arrive 5-10 minutes early to ensure your appointment starts on time.
+📞 Need to reschedule or cancel? Please contact us at least 24 hours in advance.
+
+We look forward to serving you!
+
+---
+Sanbry Men Grooming House
+        `.trim(),
+      }),
+    });
+
+    console.log('Resend API response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Resend API error response:', errorData);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log('Appointment confirmation email sent successfully:', result);
+    return true;
+
+  } catch (error) {
+    console.error('Error sending appointment confirmation email:', error);
+    return false;
+  }
+}
+

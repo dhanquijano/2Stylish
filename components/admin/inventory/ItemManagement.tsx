@@ -233,7 +233,7 @@ const ItemManagement = ({
               Add Item
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md text-white">
+          <DialogContent className="max-w-md bg-white text-black dark:bg-zinc-900 dark:text-white">
             <DialogHeader>
               <DialogTitle>Add New Item</DialogTitle>
               <DialogDescription>
@@ -499,7 +499,7 @@ const ItemManagement = ({
 
       {/* Edit Dialog */}
       <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-        <DialogContent className="max-w-md text-white">
+        <DialogContent className="max-w-md bg-white text-black dark:bg-zinc-900 dark:text-white">
           <DialogHeader>
             <DialogTitle>Edit Item</DialogTitle>
             <DialogDescription>

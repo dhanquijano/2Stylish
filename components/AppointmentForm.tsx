@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createAppointment } from "@/lib/actions/appointments";
 import PersonalInformation from "./appointment/PersonalInformation";
 import BranchSelection from "./appointment/BranchSelection";

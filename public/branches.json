@@ -1,37 +1,58 @@
 [
   {
     "id": "branch-1",
-    "name": "Sanbry Main Branch",
-    "address": "123 Main Street, Quezon City",
-    "phone": "+63 912 345 6789",
-    "hours": "9:00 AM - 8:00 PM"
+    "name": "Ayala Malls Circuit",
+    "address": "2nd Floor, Ayala Malls Circuit, Makati Avenue, Makati City",
+    "phone": "0945-568-4308",
+    "hours": "10:00 AM - 9:00 PM"
   },
   {
-    "id": "branch-2", 
-    "name": "Sanbry Makati",
-    "address": "456 Ayala Avenue, Makati City",
-    "phone": "+63 912 345 6790",
-    "hours": "9:00 AM - 8:00 PM"
+    "id": "branch-2",
+    "name": "Ayala Malls Manila Bay",
+    "address": "3rd Floor, Ayala Malls Manila Bay, Diosdado Macapagal Blvd, Parañaque",
+    "phone": "0945-568-4309",
+    "hours": "10:00 AM - 9:00 PM"
   },
   {
     "id": "branch-3",
-    "name": "Sanbry BGC",
-    "address": "789 Bonifacio Global City, Taguig",
-    "phone": "+63 912 345 6791", 
+    "name": "Assembly Grounds The Rise",
+    "address": "Ground Floor, Assembly Grounds, The Rise, Makati City",
+    "phone": "0945-568-4310",
     "hours": "10:00 AM - 9:00 PM"
   },
   {
     "id": "branch-4",
-    "name": "Sanbry Ortigas",
-    "address": "321 Ortigas Center, Pasig City",
-    "phone": "+63 912 345 6792",
-    "hours": "9:00 AM - 8:00 PM"
+    "name": "Century City The Knightsbridge Residences",
+    "address": "Ground Floor, Century City Mall, Kalayaan Avenue, Makati City",
+    "phone": "0945-568-4311",
+    "hours": "10:00 AM - 9:00 PM"
   },
   {
     "id": "branch-5",
-    "name": "Sanbry Alabang",
-    "address": "654 Alabang Town Center, Muntinlupa",
-    "phone": "+63 912 345 6793",
-    "hours": "9:00 AM - 8:00 PM"
+    "name": "Estancia Capitol Commons",
+    "address": "2nd Floor, Estancia Mall, Capitol Commons, Pasig City",
+    "phone": "0945-568-4312",
+    "hours": "10:00 AM - 9:00 PM"
+  },
+  {
+    "id": "branch-6",
+    "name": "Tomas Morato",
+    "address": "Ground Floor, Tomas Morato Avenue, Quezon City",
+    "phone": "0945-568-4313",
+    "hours": "10:00 AM - 9:00 PM"
+  },
+  {
+    "id": "branch-7",
+    "name": "San Lorenzo Place Mall",
+    "address": "2nd Floor, San Lorenzo Place Mall, Chino Roces Ave, Makati",
+    "phone": "0945-568-4314",
+    "hours": "10:00 AM - 9:00 PM"
+  },
+  {
+    "id": "branch-8",
+    "name": "Greenhills Mall",
+    "address": "3rd Floor, Greenhills Shopping Center, San Juan City",
+    "phone": "0945-568-4315",
+    "hours": "10:00 AM - 9:00 PM"
   }
-] 
+]

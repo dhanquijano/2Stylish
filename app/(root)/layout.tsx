@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import Header from "@/components/Header";
 import { auth } from "@/auth";
 import { db } from "@/database/drizzle";
@@ -14,6 +15,11 @@ const Layout = async ({ children }: { children: ReactNode }) => {
       .from(users)
       .where(eq(users.id, session.user.id))
       .limit(1);
+
+    // Check if user needs to change password
+    if (user.length > 0 && user[0].requirePasswordChange === 1) {
+      redirect("/change-password");
+    }
 
     if (
       user.length > 0 &&

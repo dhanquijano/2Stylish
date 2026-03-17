@@ -1,9 +1,9 @@
 "use server";
 
 import { db } from "@/database/drizzle";
-import { appointments } from "@/database/schema";
+import { appointments, inventoryBranches, barbers } from "@/database/schema";
 import { eq, and } from "drizzle-orm";
-import { isStaffAvailable } from "@/lib/appointment-utils";
+import { sendAppointmentConfirmationEmail } from "@/lib/email-service";
 
 export const createAppointment = async (data: {
   fullName: string;
@@ -16,19 +16,14 @@ export const createAppointment = async (data: {
   services: string;
 }) => {
   try {
-    // Fetch branch and barber lists
-    const [branchesResponse, barbersResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/branches.json`),
-      fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/barbers.json`),
+    // Fetch branch and barber data from the database instead of JSON files
+    const [branchesData, barbersData] = await Promise.all([
+      db.select().from(inventoryBranches),
+      db.select().from(barbers),
     ]);
 
-    const [branches, barbers] = await Promise.all([
-      branchesResponse.json(),
-      barbersResponse.json(),
-    ]);
-
-    const branch = branches.find((b: any) => b.id === data.branch);
-    const barber = barbers.find((b: any) => b.id === data.barber);
+    const branch = branchesData.find((b: any) => b.id === data.branch);
+    const barber = barbersData.find((b: any) => b.id === data.barber);
 
     const branchName = branch?.name || data.branch;
     const barberName =
@@ -58,20 +53,6 @@ export const createAppointment = async (data: {
         };
       }
 
-      // Check staff availability for the selected time slot
-      const staffAvailability = await isStaffAvailable(
-        data.appointmentDate,
-        data.appointmentTime,
-        data.barber,
-        data.branch
-      );
-
-      if (!staffAvailability.available) {
-        return {
-          success: false,
-          error: staffAvailability.reason || "Staff member is not available at this time.",
-        };
-      }
     }
 
     // Create the appointment
@@ -86,6 +67,22 @@ export const createAppointment = async (data: {
         barber: barberName,
         services: data.services,
       });
+
+      // Send confirmation email
+      const emailSent = await sendAppointmentConfirmationEmail({
+        email: data.email,
+        fullName: data.fullName,
+        appointmentDate: data.appointmentDate,
+        appointmentTime: data.appointmentTime,
+        branch: branchName,
+        barber: barberName,
+        services: data.services,
+        mobileNumber: data.mobileNumber,
+      });
+
+      if (!emailSent) {
+        console.warn('Appointment created but confirmation email failed to send');
+      }
     } catch (insertError: any) {
       // Handle unique constraint violation (in case of race condition)
       if (insertError?.code === '23505' || insertError?.message?.includes('duplicate') || insertError?.message?.includes('unique')) {
@@ -179,20 +176,8 @@ export const updateAppointment = async (
           };
         }
 
-        // Check staff availability
-        const staffAvailability = await isStaffAvailable(
-          updatedData.appointmentDate,
-          updatedData.appointmentTime,
-          updatedData.barber,
-          updatedData.branch
-        );
-
-        if (!staffAvailability.available) {
-          return {
-            success: false,
-            error: staffAvailability.reason || "Staff member is not available at this time.",
-          };
-        }
+        // Note: staff availability check is intentionally skipped for admin updates.
+        // Admins can reschedule to any non-conflicting slot regardless of shift schedules.
       }
     }
 
