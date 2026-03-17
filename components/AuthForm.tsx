@@ -54,28 +54,20 @@ const AuthForm = <T extends FieldValues>({
     const result = await onSubmit(data);
 
     if (result.success) {
-      toast("Success!", {
+      toast.success("Success!", {
         description: isSignIn
           ? "You have successfully signed in!"
           : "You have successfully signed up",
-          style: {
-    background: "#16a34a",
-    color: "#ffffff",
-    border: "1px solid #14532d",
-          }
+  
       });
 
       // Use window.location for full page reload to ensure session is loaded
       window.location.href = "/";
     } else {
 
-      toast (`Error! ${isSignIn ? "Signing in" : "Signing up"}`, {
+      toast.error (`Error! ${isSignIn ? "Signing in" : "Signing up"}`, {
         description: result.error ?? "An error occurred",
-          style: {
-    background: "#dc2626",
-    color: "#ffffff",
-    border: "1px solid #991b1b",
-                 },
+
       });
 
     }
