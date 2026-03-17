@@ -53,20 +53,6 @@ export const createAppointment = async (data: {
         };
       }
 
-      // Check staff availability for the selected time slot
-      const staffAvailability = await isStaffAvailable(
-        data.appointmentDate,
-        data.appointmentTime,
-        data.barber,
-        data.branch
-      );
-
-      if (!staffAvailability.available) {
-        return {
-          success: false,
-          error: staffAvailability.reason || "Staff member is not available at this time.",
-        };
-      }
     }
 
     // Create the appointment
